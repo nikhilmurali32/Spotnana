@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      # Map the root directory to /data in the container to access flights.json
+      - ./:/data:ro
+    environment:
+      # Pass the path to the flights data file as an environment variable
+      - FLIGHTS_DATA_PATH=/data/flights.json
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Next.js server-side can communicate via the docker network
+      - BACKEND_URL=http://backend:8080
+      # Next.js client-side needs the public URL
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
