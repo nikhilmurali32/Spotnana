@@ -3,9 +3,6 @@
 ## Overview & Quick Start
 SkyPath is a modern, high-performance flight connection search engine that efficiently calculates the most optimal travel routes across the globe, elegantly displaying layovers, price totals, and date-line crossings.
 
-Sample UI
-<img width="1915" height="1054" alt="image" src="https://github.com/user-attachments/assets/ec374c8c-c4ff-4564-b01a-882635df2b5a" />
-
 To run the full application stack locally, use Docker Compose:
 
 ```bash
@@ -30,3 +27,6 @@ To evolve SkyPath from a functional prototype into a production-grade, globally 
 
 1. **Event-Driven Data Pipeline**: I would introduce a high-throughput message broker (e.g., **Apache Kafka**) to asynchronously ingest real-time flight schedule changes, cancellations, and price fluctuations. This event-driven approach would allow the search instances to hydrate and update their states instantly without requiring a hard restart.
 2. **Decoupled Search Index**: I would decouple the in-memory dataset from the application servers. By offloading the routing data to a distributed in-memory cache (like **Redis**) or a dedicated, purpose-built Graph Database (like **Neo4j** or **Amazon Neptune**), we could horizontally scale the search APIs independently to handle massive bursts of concurrent users while keeping search latencies remarkably low.
+
+## Sample UI
+<img width="1915" height="1054" alt="image" src="https://github.com/user-attachments/assets/ec374c8c-c4ff-4564-b01a-882635df2b5a" />
