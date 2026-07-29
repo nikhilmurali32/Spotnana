@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FlightDataService {
+
+    private static final Logger log = LoggerFactory.getLogger(FlightDataService.class);
 
     private final ObjectMapper objectMapper;
     private final ResourceLoader resourceLoader;
@@ -54,10 +59,25 @@ public class FlightDataService {
                     ? data.airports().stream().collect(Collectors.toMap(Airport::code, Function.identity()))
                     : Map.of();
                     
-                // Store flights in a list
-                this.flights = data.flights() != null 
-                    ? data.flights() 
-                    : List.of();
+                // Validate and store flights
+                List<Flight> parsedFlights = data.flights() != null ? data.flights() : List.of();
+                List<Flight> validFlights = new ArrayList<>();
+                for (Flight flight : parsedFlights) {
+                    if (flight.origin() == null || flight.destination() == null) {
+                        log.warn("Flight {} missing origin or destination, skipping.", flight.flightNumber());
+                        continue;
+                    }
+                    if (!this.airports.containsKey(flight.origin())) {
+                        log.warn("Flight {} has unknown origin code '{}', skipping.", flight.flightNumber(), flight.origin());
+                        continue;
+                    }
+                    if (!this.airports.containsKey(flight.destination())) {
+                        log.warn("Flight {} has unknown destination code '{}', skipping.", flight.flightNumber(), flight.destination());
+                        continue;
+                    }
+                    validFlights.add(flight);
+                }
+                this.flights = List.copyOf(validFlights);
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to load flight data from " + dataPath, e);
