@@ -32,14 +32,64 @@ function extractLocalTime(isoString: string) {
   }
 }
 
+function calculateDateOffset(depTimeStr: string, arrTimeStr: string) {
+  try {
+    const depDate = depTimeStr.split('T')[0];
+    const arrDate = arrTimeStr.split('T')[0];
+    if (depDate === arrDate) return 0;
+    
+    // Parse just the YYYY-MM-DD part as UTC to perfectly calculate day differences
+    const dep = new Date(depDate);
+    const arr = new Date(arrDate);
+    const diffTime = arr.getTime() - dep.getTime();
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
+  } catch {
+    return 0;
+  }
+}
+
+function DateOffsetBadge({ offset }: { offset: number }) {
+  if (offset === 0) return null;
+  const text = offset > 0 ? `+${offset}` : `${offset}`;
+  return (
+    <span className="text-[10px] font-bold text-orange-400 ml-1.5 mt-0.5 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded whitespace-nowrap">
+      {text} Day
+    </span>
+  );
+}
+
 export default function FlightItineraryCard({ itinerary }: { itinerary: Itinerary }) {
+  const firstSegment = itinerary.segments[0];
+  const lastSegment = itinerary.segments[itinerary.segments.length - 1];
+  const totalDateOffset = calculateDateOffset(firstSegment.departureTime, lastSegment.arrivalTime);
+
   return (
     <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-slate-700 p-6 hover:border-blue-500/50 transition-all">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700/80">
-        <div className="text-3xl font-extrabold text-emerald-400 tracking-tight">
-          ${itinerary.totalPrice.toFixed(2)}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-700/80 gap-4 md:gap-0">
+        <div className="flex items-center gap-6">
+          <div className="text-3xl font-extrabold text-emerald-400 tracking-tight">
+            ${itinerary.totalPrice.toFixed(2)}
+          </div>
+          
+          {itinerary.segments.length > 1 && (
+            <div className="hidden sm:flex items-center gap-3 text-slate-300">
+              <div className="text-right">
+                <div className="text-xl font-bold text-white">{extractLocalTime(firstSegment.departureTime)}</div>
+                <div className="text-xs text-slate-400">{firstSegment.departureAirportCode}</div>
+              </div>
+              <div className="w-8 border-t-2 border-slate-600 border-dashed"></div>
+              <div>
+                <div className="text-xl font-bold text-white flex items-start">
+                  {extractLocalTime(lastSegment.arrivalTime)}
+                  <DateOffsetBadge offset={totalDateOffset} />
+                </div>
+                <div className="text-xs text-slate-400">{lastSegment.arrivalAirportCode}</div>
+              </div>
+            </div>
+          )}
         </div>
+
         <div className="text-slate-300 font-semibold flex items-center gap-2 bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
           <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -52,6 +102,7 @@ export default function FlightItineraryCard({ itinerary }: { itinerary: Itinerar
       <div className="space-y-2">
         {itinerary.segments.map((segment, index) => {
           const isLast = index === itinerary.segments.length - 1;
+          const segmentOffset = calculateDateOffset(segment.departureTime, segment.arrivalTime);
           let layoverBadge = null;
           
           if (!isLast) {
@@ -107,7 +158,10 @@ export default function FlightItineraryCard({ itinerary }: { itinerary: Itinerar
                   </div>
 
                   <div className="text-center min-w-[60px]">
-                    <div className="text-2xl font-black text-white">{extractLocalTime(segment.arrivalTime)}</div>
+                    <div className="text-2xl font-black text-white flex justify-center items-start">
+                      {extractLocalTime(segment.arrivalTime)}
+                      <DateOffsetBadge offset={segmentOffset} />
+                    </div>
                     <div className="text-sm font-semibold text-slate-400">{segment.arrivalAirportCode}</div>
                   </div>
                 </div>
