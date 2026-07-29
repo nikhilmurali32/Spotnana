@@ -3,6 +3,9 @@
 ## Overview & Quick Start
 SkyPath is a modern, high-performance flight connection search engine that efficiently calculates the most optimal travel routes across the globe, elegantly displaying layovers, price totals, and date-line crossings.
 
+Sample UI
+<img width="1915" height="1054" alt="image" src="https://github.com/user-attachments/assets/ec374c8c-c4ff-4564-b01a-882635df2b5a" />
+
 To run the full application stack locally, use Docker Compose:
 
 ```bash
