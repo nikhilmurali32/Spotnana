@@ -28,5 +28,10 @@ To evolve SkyPath from a functional prototype into a production-grade, globally 
 1. **Event-Driven Data Pipeline**: I would introduce a high-throughput message broker (e.g., **Apache Kafka**) to asynchronously ingest real-time flight schedule changes, cancellations, and price fluctuations. This event-driven approach would allow the search instances to hydrate and update their states instantly without requiring a hard restart.
 2. **Decoupled Search Index**: I would decouple the in-memory dataset from the application servers. By offloading the routing data to a distributed in-memory cache (like **Redis**) or a dedicated, purpose-built Graph Database (like **Neo4j** or **Amazon Neptune**), we could horizontally scale the search APIs independently to handle massive bursts of concurrent users while keeping search latencies remarkably low.
 
+## Assumptions
+1. Layover Duration Logic: I assumed the minimum (45m/90m) and maximum (6h) layover constraints apply to individual layovers between connected segments, rather than the cumulative layover time for the entire itinerary.
+
+2. Time Zone Handling: I assumed that all calculations should strictly rely on the provided IANA timezone strings to normalize to UTC, safely handling edge cases like crossing the International Date Line.
+
 ## Sample UI
 <img width="1915" height="1054" alt="image" src="https://github.com/user-attachments/assets/ec374c8c-c4ff-4564-b01a-882635df2b5a" />
