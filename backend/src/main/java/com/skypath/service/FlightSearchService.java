@@ -68,6 +68,12 @@ public class FlightSearchService {
                     continue; // Ensure passengers do not change airports during a layover
                 }
 
+                boolean alreadyVisited = currentFlights.stream()
+                        .anyMatch(f -> f.origin().equals(nextFlight.destination()) || f.destination().equals(nextFlight.destination()));
+                if (alreadyVisited) {
+                    continue; // Cycle prevention
+                }
+
                 ZonedDateTime departureOfNext = TimeCalculationUtils.parseToZonedDateTime(
                         nextFlight.departureTime().toString(), layoverAirport.timezone());
                 Airport airport2 = flightDataService.getAirport(nextFlight.destination());
